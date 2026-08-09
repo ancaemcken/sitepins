@@ -13,7 +13,6 @@ RUN pnpm install --frozen-lockfile --filter sitepins-backend
 
 COPY api ./api
 RUN pnpm --filter sitepins-backend build
-RUN pnpm prune --prod
 
 FROM node:22-bookworm-slim
 ENV NODE_ENV=production
