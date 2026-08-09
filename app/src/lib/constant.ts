@@ -3,7 +3,8 @@ export const DEMO_EMAIL = process.env.NEXT_PUBLIC_DEMO_EMAIL;
 export const DEMO_PASSWORD = process.env.NEXT_PUBLIC_DEMO_PASSWORD;
 export const SCHEMA_FOLDER = ".sitepins/schema";
 export const SNIPPET_FOLDER = ".sitepins/snippet";
-export const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+export const API_URL =
+  process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
 export const BUCKET_URL = process.env.NEXT_PUBLIC_BUCKET_URL;
 export const GITHUB_APP_NAME =
   process.env.NEXT_PUBLIC_GITHUB_APP_NAME || "Sitepins";

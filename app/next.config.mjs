@@ -96,6 +96,9 @@ function buildHeaders(overlay) {
   // derive backend origins from env
   const backendOrigin = getOrigin(process.env.NEXT_PUBLIC_BACKEND_URL);
   const hpWsOrigin = getOrigin(process.env.NEXT_PUBLIC_HP_WS_URL);
+  const isLocalhost =
+    backendOrigin.startsWith("http://localhost") ||
+    backendOrigin.startsWith("http://127.0.0.1");
 
   const BACKENDS = [backendOrigin, hpWsOrigin].filter(Boolean);
   const BACKEND_WS = BACKENDS.map((origin) => origin.replace(/^http/, "ws"));
@@ -177,8 +180,9 @@ function buildHeaders(overlay) {
   };
 
   const cspProdDirectives = { ...editionDirectives };
-  // In production, we keep upgrade-insecure-requests. In dev, we remove it.
-  if (isDev) {
+  // Keep upgrade-insecure-requests in production, except on localhost
+  // where HTTPS redirects would fail.
+  if (isDev || isLocalhost) {
     delete cspProdDirectives["upgrade-insecure-requests"];
   }
 

@@ -22,3 +22,6 @@ out/
 .agents/
 CLAUDE.md
 AGENTS.md
+
+# secrets
+*.pem

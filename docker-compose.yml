@@ -4,7 +4,7 @@
 #   cp app/.env.example app/.env
 #   docker compose up --build
 #
-# Web:  http://localhost:3000
+# Web:  http://localhost:7000
 # API:  http://localhost:4000  (health: /healthz)
 #
 # Media storage (S3-compatible) still has to be configured in api/.env —
@@ -14,6 +14,9 @@ services:
   mongo:
     image: mongo:7
     restart: unless-stopped
+    # Run as a single-node replica set so the better-auth adapter can use
+    # transactions (required for atomic user/session creation).
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - mongo-data:/data/db
     ports:
@@ -23,6 +26,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 15s
+
+  # One-shot init: bootstraps the single-node replica set the first time.
+  mongo-init:
+    image: mongo:7
+    restart: "no"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    entrypoint:
+      [
+        "mongosh",
+        "--host",
+        "mongo",
+        "--eval",
+        "try { rs.status() } catch { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo:27017' }] }) }"
+      ]
 
   api:
     build:
@@ -33,12 +53,16 @@ services:
       - api/.env
     environment:
       # Point the API at the compose Mongo unless api/.env overrides it.
-      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/sitepins}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/sitepins?replicaSet=rs0}
       NODE_ENV: production
       PORT: "4000"
+      # Allow the web service origin for CORS.
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:7000}
     depends_on:
       mongo:
         condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
     ports:
       - "4000:4000"
 
@@ -47,18 +71,23 @@ services:
       context: .
       dockerfile: app/Dockerfile
       args:
-        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:4000}
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:4000/api/v1}
         NEXT_PUBLIC_HP_WS_URL: ${NEXT_PUBLIC_HP_WS_URL:-ws://localhost:4000/api/v1/editor/collab}
         NEXT_PUBLIC_BUCKET_URL: ${NEXT_PUBLIC_BUCKET_URL:-}
         NEXT_PUBLIC_BRAND_NAME: ${NEXT_PUBLIC_BRAND_NAME:-Sitepins}
         NEXT_PUBLIC_BRAND_URL: ${NEXT_PUBLIC_BRAND_URL:-https://sitepins.com}
+        NEXT_PUBLIC_GITHUB_APP_NAME: ${NEXT_PUBLIC_GITHUB_APP_NAME:-}
+        NEXT_PUBLIC_GITLAB_APP_NAME: ${NEXT_PUBLIC_GITLAB_APP_NAME:-}
     restart: unless-stopped
     env_file:
       - app/.env
+    environment:
+      # Server-side fetches use the Docker service name, not localhost.
+      INTERNAL_API_URL: http://api:4000/api/v1
     depends_on:
       - api
     ports:
-      - "3000:3000"
+      - "7000:7000"
 
 volumes:
   mongo-data:

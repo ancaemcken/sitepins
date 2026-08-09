@@ -1,5 +1,8 @@
 import { logger } from "@/lib/logger";
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
+// INTERNAL_API_URL is for Docker-to-Docker or internal-networking scenarios
+// where localhost is the wrong host. Falls back to the public NEXT_PUBLIC_*.
+const BACKEND =
+  process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "";
 const INTERNAL_SECRET = process.env.INTERNAL_API_SECRET ?? "";
 
 export function internalHeaders(cookieHeader: string): HeadersInit {
