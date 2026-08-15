@@ -17,7 +17,7 @@ import { TreeCache } from "@/redux/features/git/provider-args";
 import { RootState } from "@/redux/store";
 import { TTree } from "@/types";
 import path from "path";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { updateConfig } from "../config/slice";
 import {
   coAuthorOf,
@@ -767,7 +767,8 @@ export const githubCommitApi = githubApi.injectEndpoints({
                       path: file.path,
                       parser: true,
                     },
-                    () => undefined as unknown as GhContentDirectory,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    () => undefined as any,
                   ),
                 );
               } catch {}

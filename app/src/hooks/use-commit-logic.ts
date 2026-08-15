@@ -19,7 +19,7 @@ import {
 import { useParams } from "next/navigation";
 import type { Socket } from "socket.io-client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type CommitData = {
   path: string;
@@ -285,7 +285,8 @@ export function useCommitLogic({
           (draft) => {
             draft.commitDate = new Date().toString();
             draft.data = {
-              ...revertToOriginal(getProcessedStateData()!),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ...(revertToOriginal(getProcessedStateData()!) as any),
               draft: isDraft,
             };
             draft.content = pageContent;
@@ -399,7 +400,11 @@ export function useCommitLogic({
         path: filePath,
         content: contentFormatter({
           data: shouldAddDraft
-            ? { ...revertToOriginal(getProcessedStateData()), draft: isDraft }
+            ? {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ...(revertToOriginal(getProcessedStateData()) as any),
+                draft: isDraft,
+              }
             : revertToOriginal(getProcessedStateData()),
           page_content: pageContent || "",
           format: fmType,

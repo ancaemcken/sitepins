@@ -25,7 +25,7 @@ import { IS_DEMO } from "@/lib/constant";
 import { useDeleteProjectMutation } from "@/redux/features/project/project-api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { useTranslations } from "next-intl";
 
 export default function DeleteProject({
@@ -101,12 +101,16 @@ export default function DeleteProject({
                           typeof window !== "undefined" &&
                           window.location.pathname !== "/"
                         ) {
-                          window.location.assign("/");
+                          window.location.assign(
+                            new URL("/", window.location.origin).toString(),
+                          );
                         }
                       }, 500);
                     } catch {
                       if (typeof window !== "undefined")
-                        window.location.assign("/");
+                        window.location.assign(
+                          new URL("/", window.location.origin).toString(),
+                        );
                     }
                   } catch (error) {
                     toast.error(

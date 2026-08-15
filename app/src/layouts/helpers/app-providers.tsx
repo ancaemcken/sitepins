@@ -1,13 +1,12 @@
 "use client";
 
 import CookieConsent from "@/components/cookie-consent";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PartneroCustomerSync } from "@/helpers/partnero-customer-sync";
 import TwSizeIndicator from "@/helpers/tw-size-indicator";
 import { ThemeProvider } from "next-themes";
 import React from "react";
-import LimitChecker from "./limit-checker";
 import PostHogProvider from "./posthog-provider";
 import { RtkProviders } from "./rtk-provider";
 
@@ -24,18 +23,11 @@ export function AppProviders({ children }: AppProvidersProps) {
         defaultTheme="system"
         enableColorScheme={false}
       >
-        <TooltipProvider
-          disableHoverableContent
-          delayDuration={500}
-          skipDelayDuration={0}
-        >
+        <TooltipProvider delay={500}>
           <TwSizeIndicator />
           <RtkProviders>
             <CookieConsent />
-            <PostHogProvider>
-              <LimitChecker />
-              {children}
-            </PostHogProvider>
+            <PostHogProvider>{children}</PostHogProvider>
           </RtkProviders>
         </TooltipProvider>
         <Toaster />

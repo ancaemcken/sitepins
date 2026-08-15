@@ -25,7 +25,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { z } from "zod/v4";
 import FormError from "./form-error";
 import { Button, ButtonProps } from "./ui/button";
@@ -97,7 +97,10 @@ export default function AddOrg({
                   if (onSuccess) {
                     onSuccess(res);
                   } else {
-                    window.location.href = `/org-${res.org_id}`;
+                    window.location.href = new URL(
+                      `/org-${res.org_id}`,
+                      window.location.origin,
+                    ).toString();
                   }
                 });
             })}
